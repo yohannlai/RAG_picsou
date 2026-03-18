@@ -39,22 +39,24 @@ print("🧠 Comptage de mes pièces d'or (Création de la base vectorielle FAISS
 embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 # vectorstore = FAISS.from_documents(chunks, embedding_model)
 
-# --- EMBEDDINGS & BASE VECTORIELLE (OPTIMISÉE POUR METTRE EN LIGNE SURRENDER) ---
-index_path = "faiss_index"
-embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+# --- EMBEDDINGS & BASE VECTORIELLE (CHARGEMENT PARESSEUX POUR RENDER) ---
+vectorstore = None
 
-if os.path.exists(index_path):
-    print("💰 Récupération de la base depuis le disque (Chargement FAISS)...")
-    # On charge l'index existant, zéro calcul lourd !
-    vectorstore = FAISS.load_local(index_path, embedding_model, allow_dangerous_deserialization=True)
-    print("✅ Base de données chargée instantanément !")
-else:
-    print("🧠 Calcul des pièces d'or (Première création de la base FAISS)...")
-    # On calcule les vecteurs avec ton Mac
-    vectorstore = FAISS.from_documents(chunks, embedding_model)
-    # On sauvegarde le résultat dans le dossier pour Render
-    vectorstore.save_local(index_path)
-    print(f"💾 Base sauvegardée dans le dossier '{index_path}' !")
+def get_vectorstore():
+    global vectorstore
+    if vectorstore is None:
+        print("⏳ Réveil de Picsou (Chargement du modèle lourd en mémoire)...")
+        index_path = "faiss_index"
+        embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        
+        if os.path.exists(index_path):
+            print("💰 Récupération de la base depuis le disque (Chargement FAISS)...")
+            vectorstore = FAISS.load_local(index_path, embedding_model, allow_dangerous_deserialization=True)
+        else:
+            print("🧠 Calcul des pièces d'or (Première création de la base FAISS)...")
+            vectorstore = FAISS.from_documents(chunks, embedding_model)
+            vectorstore.save_local(index_path)
+    return vectorstore
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -75,8 +77,9 @@ def ask():
     data = request.json
     question = data.get('question')
     
-    # Retrieval
-    retrieved_docs = vectorstore.similarity_search(question, k=15)
+    # Retrieval avec chargement paresseux
+    vs = get_vectorstore()
+    retrieved_docs = vs.similarity_search(question, k=15)
     context = "\n\n".join([doc.page_content for doc in retrieved_docs])
     
     # Debug console
