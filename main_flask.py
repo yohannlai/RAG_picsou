@@ -20,42 +20,85 @@ if not api_key:
 app = Flask(__name__)
 
 # --- 1. INGESTION & VECTORISATION (Au lancement du serveur) ---
-print("🦆 Dépoussiérage des registres du coffre-fort...")
-corpus_dir = "corpus/picsou"
-documents = []
+# print("🦆 Dépoussiérage des registres du coffre-fort...")
+# corpus_dir = "corpus/picsou"
+# documents = []
 
-for filepath in glob.glob(f"{corpus_dir}/*.txt"):
-    try:
-        loader = TextLoader(filepath, encoding="utf-8")
-        documents.extend(loader.load())
-    except Exception as e:
-        print(f"⚠️ Impossible de lire {filepath}: {e}")
+# for filepath in glob.glob(f"{corpus_dir}/*.txt"):
+#     try:
+#         loader = TextLoader(filepath, encoding="utf-8")
+#         documents.extend(loader.load())
+#     except Exception as e:
+#         print(f"⚠️ Impossible de lire {filepath}: {e}")
 
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=500)
-chunks = text_splitter.split_documents(documents)
-print(f"✅ {len(documents)} dossiers classés et découpés en {len(chunks)} petits contrats juteux.")
+# text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=500)
+# chunks = text_splitter.split_documents(documents)
+# print(f"✅ {len(documents)} dossiers classés et découpés en {len(chunks)} petits contrats juteux.")
 
-print("🧠 Comptage de mes pièces d'or (Création de la base vectorielle FAISS)...")
-embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+# print("🧠 Comptage de mes pièces d'or (Création de la base vectorielle FAISS)...")
+# embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 # vectorstore = FAISS.from_documents(chunks, embedding_model)
 
 # --- EMBEDDINGS & BASE VECTORIELLE (CHARGEMENT PARESSEUX POUR RENDER) ---
+# vectorstore = None
+
+# def get_vectorstore():
+#     global vectorstore
+#     if vectorstore is None:
+#         print("⏳ Réveil de Picsou (Chargement du modèle lourd en mémoire)...")
+#         index_path = "faiss_index"
+#         embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        
+#         if os.path.exists(index_path):
+#             print("💰 Récupération de la base depuis le disque (Chargement FAISS)...")
+#             vectorstore = FAISS.load_local(index_path, embedding_model, allow_dangerous_deserialization=True)
+#         else:
+#             print("🧠 Calcul des pièces d'or (Première création de la base FAISS)...")
+#             vectorstore = FAISS.from_documents(chunks, embedding_model)
+#             vectorstore.save_local(index_path)
+#     return vectorstore
+
+# --- 1. BASE VECTORIELLE & CHARGEMENT PARESSEUX ---
 vectorstore = None
 
 def get_vectorstore():
     global vectorstore
     if vectorstore is None:
-        print("⏳ Réveil de Picsou (Chargement du modèle lourd en mémoire)...")
+        print("⏳ Réveil de Picsou (Chargement de la mémoire)...")
         index_path = "faiss_index"
+        
+        # On importe ici pour ne pas ralentir le démarrage du serveur
+        from langchain_community.embeddings import HuggingFaceEmbeddings
+        from langchain_community.vectorstores import FAISS
+        
         embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         
         if os.path.exists(index_path):
             print("💰 Récupération de la base depuis le disque (Chargement FAISS)...")
             vectorstore = FAISS.load_local(index_path, embedding_model, allow_dangerous_deserialization=True)
+            print("✅ Base prête !")
         else:
-            print("🧠 Calcul des pièces d'or (Première création de la base FAISS)...")
+            print("🦆 Dépoussiérage et découpage des registres (Calcul lourd)...")
+            import glob
+            from langchain_community.document_loaders import TextLoader
+            from langchain_text_splitters import RecursiveCharacterTextSplitter
+            
+            corpus_dir = "corpus/picsou"
+            documents = []
+            for filepath in glob.glob(f"{corpus_dir}/*.txt"):
+                try:
+                    loader = TextLoader(filepath, encoding="utf-8")
+                    documents.extend(loader.load())
+                except Exception as e:
+                    pass
+            
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=500)
+            chunks = text_splitter.split_documents(documents)
+            
             vectorstore = FAISS.from_documents(chunks, embedding_model)
             vectorstore.save_local(index_path)
+            print("💾 Nouvelle base sauvegardée !")
+            
     return vectorstore
 
 client = OpenAI(
