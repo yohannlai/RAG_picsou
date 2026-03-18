@@ -4,9 +4,13 @@
 
 Bienvenue dans le coffre-fort le plus sécurisé de Donaldville ! 🦆
 
-Ce projet implémente un système RAG (Retrieval-Augmented Generation) en Python, interrogeable directement depuis le terminal. Il permet de poser des questions sur l'univers de Balthazar Picsou en se basant strictement sur un corpus de textes extraits du Wiki Picsou Fandom.
+Ce projet implémente un système RAG (Retrieval-Augmented Generation) en Python. Il permet de poser des questions sur l'univers de Balthazar Picsou en se basant strictement sur un corpus de textes extraits du Picsou Wiki de Fandom.
 
 L'assistant IA est configuré pour faire du **roleplay** : il répond à la première personne avec le caractère avare, grognon mais amusant de l'oncle Picsou, tout en s'assurant de ne jamais halluciner d'informations hors du corpus.
+
+🌐 **Tester l'application en ligne :** [Le Coffre de Picsou](https://le-coffre-de-picsou.onrender.com) *(Hébergé sur Render)*
+
+---
 
 ## 🛠️ Stack Technique
 
@@ -15,22 +19,33 @@ L'assistant IA est configuré pour faire du **roleplay** : il répond à la prem
 * **Modèle d'Embeddings :** `all-MiniLM-L6-v2` (via HuggingFace)
 * **LLM (Génération) :** `openrouter/hunter-alpha` (via l'API OpenRouter)
 * **Traitement du texte :** Découpage optimisé (chunks de 1500 caractères avec un chevauchement de 500 caractères).
+* **Interface Web :** Flask, HTML/CSS/JS natif.
+
+---
 
 ## 📂 Architecture du Projet
 
 Le dépôt contient les fichiers suivants :
 
-```text
+~~~text
 RAG_picsou/
 ├── corpus/
-│   └── picsou/          # Dossier contenant les 36 fichiers .txt du Wiki
+│   └── picsou/          # Dossier contenant les 39 fichiers .txt du Wiki
+├── templates/
+│   └── index.html       # Interface visuelle web stylisée "Coffre-Fort"
 ├── .gitignore           # Fichier ignorant les données sensibles (.env, venv, etc.)
 ├── README.md            # Documentation du projet
+├── requirements.txt     # Dépendances requises (local et déploiement Render)
 ├── main.py              # Script principal du RAG (version terminal interactive)
+├── main_flask.py        # Serveur Python gérant l'application web
 └── wiki_downloader.py   # Script utilitaire pour télécharger les pages du Wiki Fandom
-```
+~~~
+
+---
 
 ## 🚀 Installation et Lancement
+
+Si vous souhaitez faire tourner mon coffre-fort sur votre propre machine, suivez ces instructions à la lettre. Le temps, c'est de l'argent !
 
 ### 1. Prérequis
 Assurez-vous d'avoir Python 3 installé sur votre machine.
@@ -38,9 +53,9 @@ Assurez-vous d'avoir Python 3 installé sur votre machine.
 ### 2. Cloner le dépôt et préparer l'environnement
 Clonez ce projet sur votre machine, puis créez et activez un environnement virtuel pour isoler les dépendances :
 
-```bash
+~~~bash
 # Clonage du repo
-git clone [https://github.com/yohannlai/RAG_picsou.git](https://github.com/yohannlai/RAG_picsou.git)
+git clone https://github.com/yohannlai/RAG_picsou.git
 cd RAG_picsou
 
 # Création de l'environnement virtuel
@@ -51,32 +66,42 @@ source venv/bin/activate
 
 # Activation de l'environnement (Windows)
 .\venv\Scripts\activate
-```
+~~~
 
 ### 3. Installer les dépendances
-Installez toutes les bibliothèques requises pour faire tourner le système RAG :
-```bash
-pip install langchain langchain-community faiss-cpu sentence-transformers openai python-dotenv langchain-huggingface langchain-text-splitters
-```
+Ne gaspillez pas d'électricité, installez toutes les bibliothèques requises d'un coup :
+~~~bash
+pip install -r requirements.txt
+~~~
 
 ### 4. Configuration de la clé API
 Créez un fichier nommé `.env` à la racine du projet (il sera ignoré par Git grâce au `.gitignore`) et ajoutez-y votre clé API OpenRouter :
-```text
+~~~text
 OPENROUTER_API_KEY=votre_cle_api_openrouter_ici
-```
+~~~
 
-### 5. Lancer l'assistant
-Exécutez le script principal. Le système va ingérer le corpus, créer la base vectorielle (ou la charger si elle existe déjà), et ouvrir l'invite de commande interactive de Picsou :
-```bash
-python3 main.py
-```
+---
 
 ## 💬 Utilisation
 
-Une fois le script lancé, Balthazar Picsou vous accueillera (avec sa mauvaise humeur habituelle). Posez-lui n'importe quelle question sur son univers :
+Vous avez deux façons d'interroger Balthazar Picsou :
 
+### Option A : L'Interface Web (Recommandée)
+Pour profiter de l'interface graphique responsive avec les suggestions de questions intégrées :
+~~~bash
+python3 main_flask.py
+~~~
+Ouvrez ensuite votre navigateur à l'adresse suivante : **`http://127.0.0.1:5000`**
+
+### Option B : Le Terminal (Pour les puristes)
+Exécutez le script principal. Le système va ingérer le corpus, créer la base vectorielle, et ouvrir l'invite de commande interactive de Picsou :
+~~~bash
+python3 main.py
+~~~
 > **🦆 Ta question, misérable fouineur :** Qui est Gontran Bonheur ?
 
 Le RAG cherchera les morceaux les plus pertinents dans les fichiers `.txt` et générera une réponse contextuelle.
-
 *Note : Tapez `quit`, `exit` ou `q` pour fermer le coffre et quitter le programme proprement.*
+
+---
+*Un sou est un sou !*
