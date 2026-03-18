@@ -1,1 +1,82 @@
-# RAG_picsou
+18/03/2026 **LAI Yohann - E4 IMAC**
+
+# 💰 TP RAG — Le Coffre-Fort de Balthazar Picsou 
+
+Bienvenue dans le coffre-fort le plus sécurisé de Donaldville ! 🦆
+
+Ce projet implémente un système RAG (Retrieval-Augmented Generation) en Python, interrogeable directement depuis le terminal. Il permet de poser des questions sur l'univers de Balthazar Picsou en se basant strictement sur un corpus de textes extraits du Wiki Picsou Fandom.
+
+L'assistant IA est configuré pour faire du **roleplay** : il répond à la première personne avec le caractère avare, grognon mais amusant de l'oncle Picsou, tout en s'assurant de ne jamais halluciner d'informations hors du corpus.
+
+## 🛠️ Stack Technique
+
+* **Orchestration :** LangChain
+* **Base de données vectorielle :** FAISS (Facebook AI Similarity Search)
+* **Modèle d'Embeddings :** `all-MiniLM-L6-v2` (via HuggingFace)
+* **LLM (Génération) :** `openrouter/hunter-alpha` (via l'API OpenRouter)
+* **Traitement du texte :** Découpage optimisé (chunks de 1500 caractères avec un chevauchement de 500 caractères).
+
+## 📂 Architecture du Projet
+
+Le dépôt contient les fichiers suivants :
+
+```text
+RAG_picsou/
+├── corpus/
+│   └── picsou/          # Dossier contenant les 36 fichiers .txt du Wiki
+├── .gitignore           # Fichier ignorant les données sensibles (.env, venv, etc.)
+├── README.md            # Documentation du projet
+├── main.py              # Script principal du RAG (version terminal interactive)
+└── wiki_downloader.py   # Script utilitaire pour télécharger les pages du Wiki Fandom
+```
+
+## 🚀 Installation et Lancement
+
+### 1. Prérequis
+Assurez-vous d'avoir Python 3 installé sur votre machine.
+
+### 2. Cloner le dépôt et préparer l'environnement
+Clonez ce projet sur votre machine, puis créez et activez un environnement virtuel pour isoler les dépendances :
+
+```bash
+# Clonage du repo
+git clone [https://github.com/yohannlai/RAG_picsou.git](https://github.com/yohannlai/RAG_picsou.git)
+cd RAG_picsou
+
+# Création de l'environnement virtuel
+python3 -m venv venv
+
+# Activation de l'environnement (MacOS/Linux)
+source venv/bin/activate
+
+# Activation de l'environnement (Windows)
+.\venv\Scripts\activate
+```
+
+### 3. Installer les dépendances
+Installez toutes les bibliothèques requises pour faire tourner le système RAG :
+```bash
+pip install langchain langchain-community faiss-cpu sentence-transformers openai python-dotenv langchain-huggingface langchain-text-splitters
+```
+
+### 4. Configuration de la clé API
+Créez un fichier nommé `.env` à la racine du projet (il sera ignoré par Git grâce au `.gitignore`) et ajoutez-y votre clé API OpenRouter :
+```text
+OPENROUTER_API_KEY=votre_cle_api_openrouter_ici
+```
+
+### 5. Lancer l'assistant
+Exécutez le script principal. Le système va ingérer le corpus, créer la base vectorielle (ou la charger si elle existe déjà), et ouvrir l'invite de commande interactive de Picsou :
+```bash
+python3 main.py
+```
+
+## 💬 Utilisation
+
+Une fois le script lancé, Balthazar Picsou vous accueillera (avec sa mauvaise humeur habituelle). Posez-lui n'importe quelle question sur son univers :
+
+> **🦆 Ta question, misérable fouineur :** Qui est Gontran Bonheur ?
+
+Le RAG cherchera les morceaux les plus pertinents dans les fichiers `.txt` et générera une réponse contextuelle.
+
+*Note : Tapez `quit`, `exit` ou `q` pour fermer le coffre et quitter le programme proprement.*
