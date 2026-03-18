@@ -1,0 +1,9 @@
+# Environnement virtuel
+venv/
+__pycache__/
+
+# Fichiers d'environnement
+.env
+
+# Ignorer les dossiers système Mac
+.DS_Store
