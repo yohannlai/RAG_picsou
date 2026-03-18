@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f3a9.png">
+    <title>Le Coffre de Picsou</title>
+    <style>
+        /* === Optimisation de l'espace global === */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        body { 
+            background-color: #0b192c; 
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='30' font-size='20' transform='rotate(-30 10 30)' opacity='0.07'%3E💰%3C/text%3E%3Ctext x='60' y='80' font-size='20' transform='rotate(-30 60 80)' opacity='0.07'%3E💵%3C/text%3E%3C/svg%3E");
+            color: #f8f9fa; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            align-items: center; 
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        h1 { 
+            color: #FFD700; 
+            text-shadow: 2px 2px 4px #000; 
+            margin: 10px 0;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        /* === Zone de discussion optimisée === */
+        #chat-box { 
+            width: 95%; 
+            max-width: 800px; 
+            flex: 1;
+            border: 3px solid #FFD700; 
+            border-radius: 15px; 
+            padding: 20px; 
+            overflow-y: auto; /* Seule cette zone peut scroller */
+            background: rgba(11, 25, 44, 0.95); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            white-space: pre-wrap; /* Pour garder les sauts de ligne de Picsou */
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
+
+        .msg { margin-bottom: 20px; padding: 12px; border-radius: 10px; }
+        .user { background: rgba(255,255,255,0.05); border-left: 4px solid #fff; }
+        .picsou { background: rgba(255, 215, 0, 0.05); border-left: 4px solid #FFD700; color: #FFD700; }
+        
+        /* === Boutons de suggestions === */
+        #suggestions-container {
+            width: 95%;
+            max-width: 800px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+            min-height: 35px; /* Évite un saut d'affichage brutal */
+        }
+
+        .suggestion-btn {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #FFD700;
+            color: #FFD700;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-btn:hover {
+            background: #FFD700;
+            color: #0b192c;
+            transform: translateY(-2px);
+        }
+
+        /* === Zone de saisie === */
+        #input-area { 
+            width: 95%; 
+            max-width: 800px; 
+            display: flex; 
+            gap: 10px; 
+            margin: 15px 0;
+        }
+        
+        input { 
+            flex: 1; 
+            padding: 15px; 
+            border-radius: 10px; 
+            border: 2px solid #FFD700; 
+            background: #1a2a3a; 
+            color: white; 
+            font-size: 16px;
+            outline: none;
+        }
+
+        button { 
+            padding: 0 25px; 
+            background: #FFD700; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: transform 0.2s;
+        }
+        button:hover { transform: scale(1.05); }
+
+        footer {
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #FFD700;
+            opacity: 0.7;
+            padding-bottom: 5px;
+        }
+
+        #chat-box::-webkit-scrollbar { width: 8px; }
+        #chat-box::-webkit-scrollbar-track { background: #0b192c; }
+        #chat-box::-webkit-scrollbar-thumb { background: #FFD700; border-radius: 10px; }
+
+        .loading { font-style: italic; opacity: 0.6; font-size: 0.9em; }
+
+        /* === RESPONSIVITÉ : Ajustements pour mobile === */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.3rem; margin: 5px 0; }
+            #chat-box { padding: 10px; border-radius: 10px; }
+            .msg { margin-bottom: 10px; padding: 8px; font-size: 14px; }
+            input { font-size: 14px; padding: 10px; border-radius: 8px; }
+            button { padding: 0 15px; border-radius: 8px; }
+            .suggestion-btn { font-size: 12px; padding: 6px 10px; }
+            footer { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+    <h1>💰 Le Coffre de Picsou</h1>
+    
+    <div id="chat-box">
+        <div class="msg picsou">🎩 <strong>Picsou :</strong> NOM D'UNE CORNEMUSE ! Qu'est-ce que tu fais là ? Parle vite, le temps c'est de l'argent !</div>
+    </div>
+
+    <div id="suggestions-container"></div>
+
+    <div id="input-area">
+        <input type="text" id="user-input" placeholder="Ta question, misérable fouineur..." onkeypress="handleKeyPress(event)" autocomplete="off">
+        <button onclick="askQuestion()">ENVOYER</button>
+    </div>
+
+    <footer>Yohann LAI | IMAC 2026</footer>
+
+    <script>
+        // La banque de 35 questions suggérées
+        const questionsPool = [
+            "Quel est le montant de ta fortune ?",
+            "Comment as-tu gagné ton premier sou ?",
+            "C'est qui Goldie O'Gilt ?",
+            "Qui est Don Rosa ?",
+            "Qui était Carl Barks ?",
+            "Où se trouve ton coffre-fort ?",
+            "Que penses-tu de John Flairsou ?",
+            "Que penses-tu d'Archibald Gripsou ?",
+            "Qui sont les Rapetou ?",
+            "Qui est Miss Tick ?",
+            "Qui est Miss Frappe ?",
+            "Parle-moi de ta sœur Hortense.",
+            "Parle-moi de ta sœur Matilda.",
+            "Parle-moi de ta famille.",
+            "Qui a fondé Donaldville ?",
+            "Parle-moi de ton père Fergus Mc Picsou.",
+            "Parle-moi de ta mère Edith O'Drake.",
+            "Que penses-tu de Donald ?",
+            "Qui est Gédéon Picsou ?",
+            "Que penses-tu de Riri, Fifi et Loulou ?",
+            "Parle-moi de ton neveu Popop.",
+            "Parle-moi de ton neveu Gontran.",
+            "C'est quoi ton sou fétiche ?",
+            "Liste-moi tes aventures écrites par Carl Barks.",
+            "Liste-moi tes aventures écrites par Don Rosa.",
+            "C'est qui Ludwig Von Drake ?",
+            "Que penses-tu de Brigitte McBridge ?",
+            "Que font les Castors Juniors ?",
+            "Qui est Géo Trouvetou ?",
+            "Parle-moi de Daisy.",
+            "Parle-moi de Della Duck.",
+            "Qui est Elvire Écoutum ?",
+            "Où se situe le Calisota ?",
+            "Les trésors de Balthazar Picsou.",
+            "Que contient le manuel des Castors Juniors ?"
+        ];
+
+        // Fonction pour piocher 3 nouvelles questions et les afficher
+        function loadSuggestions() {
+            const container = document.getElementById('suggestions-container');
+            container.innerHTML = ''; // On vide les anciennes questions
+            container.style.display = 'flex'; // On rend le conteneur visible
+
+            // Mélanger le tableau et prendre les 3 premières
+            const shuffled = [...questionsPool].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 3);
+            
+            selected.forEach(q => {
+                const btn = document.createElement('button');
+                btn.className = 'suggestion-btn';
+                btn.innerText = q;
+                btn.onclick = () => {
+                    document.getElementById('user-input').value = q;
+                    askQuestion();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // On charge les suggestions au lancement de la page
+        window.onload = loadSuggestions;
+
+        // Fonction pour détecter la touche Entrée
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') { askQuestion(); }
+        }
+
+        async function askQuestion() {
+            const input = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            const suggestionsContainer = document.getElementById('suggestions-container');
+            
+            if (!input.value.trim()) return;
+
+            const question = input.value;
+            chatBox.innerHTML += `<div class="msg user">🕵️ <strong>Toi :</strong> ${question}</div>`;
+            input.value = '';
+            
+            // On cache les suggestions pendant que Picsou réfléchit
+            suggestionsContainer.style.display = 'none';
+            
+            const loaderId = "load-" + Date.now();
+            chatBox.innerHTML += `<div class="msg picsou loading" id="${loaderId}">*Picsou fouille nerveusement dans ses registres...*</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({question: question})
+                });
+                const data = await response.json();
+                
+                const loaderElem = document.getElementById(loaderId);
+                if (loaderElem) loaderElem.remove();
+                
+                // Sécurité pour les réponses "null"
+                const finalAnswer = data.answer ? data.answer : "Sapristi ! Mon cerveau a eu un raté (Le serveur est surchargé). Repose ta question !";
+                chatBox.innerHTML += `<div class="msg picsou">🎩 <strong>Picsou :</strong> ${finalAnswer}</div>`;
+                
+                // On remet de NOUVELLES suggestions une fois la réponse affichée !
+                loadSuggestions();
+
+            } catch (err) {
+                document.getElementById(loaderId).innerText = "Sapristi ! Mon télégraphe est en panne !";
+                // En cas d'erreur, on remet les suggestions pour réessayer
+                loadSuggestions();
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
