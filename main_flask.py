@@ -3,10 +3,6 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import glob
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
-from langchain_community.document_loaders import TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
 from openai import OpenAI
 
 # --- INITIALISATION ---
