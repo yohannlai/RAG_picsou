@@ -17,7 +17,7 @@ L'assistant IA est configuré pour faire du **roleplay** : il répond à la prem
 * **Orchestration :** LangChain
 * **Base de données vectorielle :** FAISS (Facebook AI Similarity Search)
 * **Modèle d'Embeddings :** `all-MiniLM-L6-v2` (via HuggingFace)
-* **LLM (Génération) :** `openrouter/hunter-alpha` (via l'API OpenRouter)
+* **LLM (Génération) :** `xiaomi/mimo-v2-pro` (via l'API OpenRouter)
 * **Traitement du texte :** Découpage optimisé (chunks de 1500 caractères avec un chevauchement de 500 caractères).
 * **Interface Web :** Flask, HTML/CSS/JS natif.
 
@@ -31,6 +31,7 @@ Le dépôt contient les fichiers suivants :
 RAG_picsou/
 ├── corpus/
 │   └── picsou/          # Dossier contenant les 39 fichiers .txt du Wiki
+├── faiss_index/         # Base vectorielle pré-calculée (Optimisation mémoire pour Render)
 ├── templates/
 │   └── index.html       # Interface visuelle web stylisée "Coffre-Fort"
 ├── .gitignore           # Fichier ignorant les données sensibles (.env, venv, etc.)

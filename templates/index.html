@@ -256,7 +256,14 @@
                 if (loaderElem) loaderElem.remove();
                 
                 // Sécurité pour les réponses "null"
-                const finalAnswer = data.answer ? data.answer : "Sapristi ! Mon cerveau a eu un raté (Le serveur est surchargé). Repose ta question !";
+                let finalAnswer = data.answer ? data.answer : "Sapristi ! Mon cerveau a eu un raté (Le serveur est surchargé). Repose ta question !";
+                
+                // --- Formatage du Markdown ---
+                // Transforme les **texte** en véritable texte gras HTML
+                finalAnswer = finalAnswer.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
+                // Transforme les *texte* en italique (en gardant les astérisques pour les actions de Picsou)
+                finalAnswer = finalAnswer.replace(/\*([\s\S]*?)\*/g, '<em>*$1*</em>');
+                
                 chatBox.innerHTML += `<div class="msg picsou">🎩 <strong>Picsou :</strong> ${finalAnswer}</div>`;
                 
                 // On remet de NOUVELLES suggestions une fois la réponse affichée !

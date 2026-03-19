@@ -144,8 +144,9 @@ def ask():
     
     try:
         response = client.chat.completions.create(
-            model="openrouter/hunter-alpha",
-            messages=[{"role": "user", "content": prompt}]
+            model="xiaomi/mimo-v2-pro",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4000
         )
         answer = response.choices[0].message.content
         if not answer:
