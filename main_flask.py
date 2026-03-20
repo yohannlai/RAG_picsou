@@ -1,58 +1,16 @@
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["RENDER"] = "1" 
 import glob
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 from openai import OpenAI
 
 # --- INITIALISATION ---
-load_dotenv()
+load_dotenv(override=True) # <-- On force la lecture du fichier .env physique
 api_key = os.getenv("OPENROUTER_API_KEY")
 
-if not api_key:
-    print("❌ Erreur : Clé OPENROUTER_API_KEY introuvable. Vérifie ton fichier .env.")
-    exit()
-
 app = Flask(__name__)
-
-# --- 1. INGESTION & VECTORISATION (Au lancement du serveur) ---
-# print("🦆 Dépoussiérage des registres du coffre-fort...")
-# corpus_dir = "corpus/picsou"
-# documents = []
-
-# for filepath in glob.glob(f"{corpus_dir}/*.txt"):
-#     try:
-#         loader = TextLoader(filepath, encoding="utf-8")
-#         documents.extend(loader.load())
-#     except Exception as e:
-#         print(f"⚠️ Impossible de lire {filepath}: {e}")
-
-# text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=500)
-# chunks = text_splitter.split_documents(documents)
-# print(f"✅ {len(documents)} dossiers classés et découpés en {len(chunks)} petits contrats juteux.")
-
-# print("🧠 Comptage de mes pièces d'or (Création de la base vectorielle FAISS)...")
-# embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-# vectorstore = FAISS.from_documents(chunks, embedding_model)
-
-# --- EMBEDDINGS & BASE VECTORIELLE (CHARGEMENT PARESSEUX POUR RENDER) ---
-# vectorstore = None
-
-# def get_vectorstore():
-#     global vectorstore
-#     if vectorstore is None:
-#         print("⏳ Réveil de Picsou (Chargement du modèle lourd en mémoire)...")
-#         index_path = "faiss_index"
-#         embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-        
-#         if os.path.exists(index_path):
-#             print("💰 Récupération de la base depuis le disque (Chargement FAISS)...")
-#             vectorstore = FAISS.load_local(index_path, embedding_model, allow_dangerous_deserialization=True)
-#         else:
-#             print("🧠 Calcul des pièces d'or (Première création de la base FAISS)...")
-#             vectorstore = FAISS.from_documents(chunks, embedding_model)
-#             vectorstore.save_local(index_path)
-#     return vectorstore
 
 # --- 1. BASE VECTORIELLE & CHARGEMENT PARESSEUX ---
 vectorstore = None
@@ -63,11 +21,45 @@ def get_vectorstore():
         print("⏳ Réveil de Picsou (Chargement de la mémoire)...")
         index_path = "faiss_index"
         
-        # On importe ici pour ne pas ralentir le démarrage du serveur
-        from langchain_community.embeddings import HuggingFaceEmbeddings
         from langchain_community.vectorstores import FAISS
         
-        embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        # --- L'ASTUCE : Séparer Local et Production ---
+        if os.getenv("RENDER"):
+            print("☁️ Mode Serveur : Utilisation de l'API HuggingFace (Sécurisée)")
+            import requests
+            
+            # Notre propre connecteur infaillible pour remplacer celui de LangChain
+            class SafeHFEmbeddings:
+                def __init__(self, token):
+                    self.url = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2/pipeline/feature-extraction"
+                    self.headers = {"Authorization": f"Bearer {token}"}
+                    
+                def embed_documents(self, texts):
+                    import requests
+                    res = requests.post(self.url, headers=self.headers, json={"inputs": texts, "options": {"wait_for_model": True}})
+                    
+                    # Le bouclier anti-crash : on stoppe tout si Hugging Face renvoie une page web d'erreur (404, 500...)
+                    if not res.ok:
+                        raise ValueError(f"⚠️ ERREUR {res.status_code} DE HUGGINGFACE : {res.text}")
+                        
+                    data = res.json()
+                    if isinstance(data, dict) and "error" in data:
+                        raise ValueError(f"⚠️ REFUS DE HUGGINGFACE : {data['error']}")
+                    return data
+                    
+                def embed_query(self, text):
+                    return self.embed_documents([text])[0]
+                
+                def __call__(self, text):
+                    return self.embed_query(text)
+
+            hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+            embedding_model = SafeHFEmbeddings(hf_token)
+            
+        else:
+            print("💻 Mode Local : Utilisation du processeur de la machine")
+            from langchain_community.embeddings import HuggingFaceEmbeddings
+            embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         
         if os.path.exists(index_path):
             print("💰 Récupération de la base depuis le disque (Chargement FAISS)...")
