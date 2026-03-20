@@ -75,10 +75,11 @@ Ne gaspillez pas d'électricité, installez toutes les bibliothèques requises d
 pip install -r requirements.txt
 ~~~
 
-### 4. Configuration de la clé API
-Créez un fichier nommé `.env` à la racine du projet (il sera ignoré par Git grâce au `.gitignore`) et ajoutez-y votre clé API OpenRouter :
+### 4. Configuration des clés API
+Créez un fichier nommé `.env` à la racine du projet (il sera ignoré par Git grâce au `.gitignore`) et ajoutez-y vos clés API OpenRouter et Hugging Face :
 ~~~text
 OPENROUTER_API_KEY=votre_cle_api_openrouter_ici
+HUGGINGFACEHUB_API_TOKEN=votre_cle_api_huggingface_ici
 ~~~
 
 ---
