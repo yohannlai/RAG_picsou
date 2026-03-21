@@ -1,6 +1,6 @@
 18/03/2026 **LAI Yohann - E4 IMAC**
 
-# 💰 TP RAG — Le Coffre-Fort de Balthazar Picsou 
+# 💰 TP RAG — Le Coffre de Picsou 
 
 Bienvenue dans le coffre-fort le plus sécurisé de Donaldville ! 🦆
 
@@ -16,8 +16,8 @@ L'assistant IA est configuré pour faire du **roleplay** : il répond à la prem
 
 * **Orchestration :** LangChain
 * **Base de données vectorielle :** FAISS (Facebook AI Similarity Search)
-* **Modèle d'Embeddings :** `all-MiniLM-L6-v2` (via HuggingFace)
-* **LLM (Génération) :** `xiaomi/mimo-v2-pro` (via l'API OpenRouter)
+* **Modèle d'Embeddings :** `all-MiniLM-L6-v2` (Architecture hybride : Local via CPU / Serveur via API HuggingFace pour économiser la RAM)
+* **LLM (Génération) :** `arcee-ai/trinity-large-preview:free` (via l'API OpenRouter, optimisé pour le roleplay)
 * **Traitement du texte :** Découpage optimisé (chunks de 1500 caractères avec un chevauchement de 500 caractères).
 * **Interface Web :** Flask, HTML/CSS/JS natif.
 
@@ -30,21 +30,22 @@ Le dépôt contient les fichiers suivants :
 ~~~text
 RAG_picsou/
 ├── corpus/
-│   └── picsou/          # Dossier contenant les 39 fichiers .txt du Wiki
-├── faiss_index/         # Base vectorielle pré-calculée (Optimisation mémoire pour Render)
+│   └── picsou/               # Dossier contenant les 39 fichiers .txt du Wiki
+├── faiss_index/              # Base vectorielle pré-calculée (Optimisation pour Render)
 ├── templates/
-│   └── index.html       # Interface visuelle web stylisée "Coffre-Fort"
-├── .gitignore           # Fichier ignorant les données sensibles (.env, venv, etc.)
-├── README.md            # Documentation du projet
-├── requirements.txt     # Dépendances requises (local et déploiement Render)
-├── main.py              # Script principal du RAG (version terminal interactive)
-├── main_flask.py        # Serveur Python gérant l'application web
-└── wiki_downloader.py   # Script utilitaire pour télécharger les pages du Wiki Fandom
+│   └── index.html            # Interface visuelle web stylisée "Coffre-Fort"
+├── .gitignore                # Fichier ignorant les données sensibles (.env, venv, etc.)
+├── README.md                 # Documentation du projet
+├── requirements.txt          # Dépendances complètes pour l'exécution locale (avec Torch)
+├── requirements_render.txt   # Dépendances allégées pour le déploiement serveur (sans Torch)
+├── main.py                   # Script principal du RAG (version terminal interactive)
+├── main_flask.py             # Serveur Python gérant l'application web
+└── wiki_downloader.py        # Script utilitaire pour télécharger les pages du Wiki Fandom
 ~~~
 
 ---
 
-## 🚀 Installation et Lancement
+## 🚀 Installation et Lancement (Mode Local)
 
 Si vous souhaitez faire tourner mon coffre-fort sur votre propre machine, suivez ces instructions à la lettre. Le temps, c'est de l'argent !
 
@@ -70,7 +71,7 @@ source venv/bin/activate
 ~~~
 
 ### 3. Installer les dépendances
-Ne gaspillez pas d'électricité, installez toutes les bibliothèques requises d'un coup :
+Ne gaspillez pas d'électricité, installez toutes les bibliothèques requises pour le mode local d'un coup :
 ~~~bash
 pip install -r requirements.txt
 ~~~
@@ -96,7 +97,7 @@ python3 main_flask.py
 Ouvrez ensuite votre navigateur à l'adresse suivante : **`http://127.0.0.1:5000`**
 
 ### Option B : Le Terminal (Pour les puristes)
-Exécutez le script principal. Le système va ingérer le corpus, créer la base vectorielle, et ouvrir l'invite de commande interactive de Picsou :
+Exécutez le script principal. Le système va charger la base vectorielle et ouvrir l'invite de commande interactive de Picsou :
 ~~~bash
 python3 main.py
 ~~~

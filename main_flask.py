@@ -1,6 +1,5 @@
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-os.environ["RENDER"] = "1" 
 import glob
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
@@ -125,6 +124,7 @@ def ask():
     - Utilise des paragraphes courts.
     - Mets tes actions entre astérisques (ex: *râle en rangeant ses pièces*).
     
+    Réponds de manière naturelle et percutante. Ne surjoue pas les actions entre astérisques.
     Tu dois te baser UNIQUEMENT sur les informations suivantes extraites de tes registres personnels. 
     Si la réponse n'y est pas, dis-le clairement en râlant et en expliquant que tu ne vas certainement pas payer un détective pour chercher cette information.
     
@@ -136,7 +136,7 @@ def ask():
     
     try:
         response = client.chat.completions.create(
-            model="xiaomi/mimo-v2-pro",
+            model="arcee-ai/trinity-large-preview:free",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=4000
         )
